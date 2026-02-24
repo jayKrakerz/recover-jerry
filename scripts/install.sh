@@ -18,21 +18,44 @@ if ! command -v brew &>/dev/null; then
     fi
 fi
 
-# 2. Install Python 3.11+ if needed
-NEED_PYTHON=false
-if command -v python3 &>/dev/null; then
-    PY_VERSION=$(python3 -c "import sys; print(sys.version_info[:2] >= (3, 11))" 2>/dev/null || echo "False")
-    if [ "$PY_VERSION" != "True" ]; then
-        NEED_PYTHON=true
+# 2. Find a Python 3.11+ binary, or install one
+find_python() {
+    for cmd in python3.13 python3.12 python3.11; do
+        if command -v "$cmd" &>/dev/null; then
+            echo "$cmd"
+            return
+        fi
+    done
+    if command -v python3 &>/dev/null; then
+        if python3 -c "import sys; assert sys.version_info >= (3, 11)" 2>/dev/null; then
+            echo "python3"
+            return
+        fi
     fi
-else
-    NEED_PYTHON=true
-fi
+    for prefix in /opt/homebrew /usr/local; do
+        for cmd in python3.13 python3.12 python3.11 python3; do
+            if [ -x "$prefix/bin/$cmd" ]; then
+                if "$prefix/bin/$cmd" -c "import sys; assert sys.version_info >= (3, 11)" 2>/dev/null; then
+                    echo "$prefix/bin/$cmd"
+                    return
+                fi
+            fi
+        done
+    done
+    return 1
+}
 
-if [ "$NEED_PYTHON" = true ]; then
+PYTHON=$(find_python) || {
     echo "Installing Python 3.11..."
     brew install python@3.11
-fi
+    # Find it again after install
+    PYTHON=$(find_python) || {
+        echo "Error: Python installation failed. Try: brew install python@3.11"
+        exit 1
+    }
+}
+
+echo "Using: $PYTHON ($($PYTHON --version))"
 
 # 3. Clone the repo
 INSTALL_DIR="$HOME/recover-jerry"
@@ -46,7 +69,7 @@ fi
 
 # 4. Install Python dependencies
 echo "Installing dependencies..."
-pip3 install -r "$INSTALL_DIR/requirements.txt"
+"$PYTHON" -m pip install -r "$INSTALL_DIR/requirements.txt"
 
 # 5. Optional: install testdisk for PhotoRec file carving
 if ! command -v photorec &>/dev/null; then
