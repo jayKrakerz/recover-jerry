@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# PhotoRec artifacts
+photorec.log
+photorec.ses
+photorec.se2
+fidentify.log
+
+# macOS
+.DS_Store
+
+# App runtime
+.recover-jerry/
