@@ -2,6 +2,22 @@
 
 A macOS file recovery tool with a web UI. Scans multiple recovery sources (Trash, APFS snapshots, Time Machine, Spotlight, PhotoRec) and lets you selectively recover deleted files with integrity verification.
 
+## Quick Install
+
+Open Terminal and paste:
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/jayKrakerz/recover-jerry/master/scripts/install.sh)"
+```
+
+This handles everything automatically — Homebrew, Python, dependencies, and launches the app.
+
+To run it again later:
+
+```bash
+~/recover-jerry/scripts/launch.sh
+```
+
 ## Requirements
 
 - **macOS** (uses macOS-specific APIs: APFS snapshots, Time Machine, Spotlight)
