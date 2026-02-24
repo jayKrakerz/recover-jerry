@@ -3,7 +3,7 @@
 import asyncio
 import logging
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, Callable
 
 from ..models.scan import ScanConfig, ScanJob, ScanStatus, ScanProgress, ScanResult
@@ -81,8 +81,8 @@ class ScanManager:
                     continue
 
                 job.progress.current_source = scanner.name
-                job.progress.sources_completed = i
-                job.progress.percent = (i / len(job.config.sources)) * 100
+                job.progress.sources_completed = i + 1
+                job.progress.percent = ((i + 1) / len(job.config.sources)) * 100
                 job.progress.message = f"Scanning {scanner.name}..."
                 await self._notify_progress(job)
 
@@ -124,7 +124,7 @@ class ScanManager:
                 )
 
             job.status = ScanStatus.COMPLETED
-            job.completed_at = datetime.now()
+            job.completed_at = datetime.now(tz=timezone.utc)
             job.progress.sources_completed = len(job.config.sources)
             job.progress.percent = 100.0
             job.progress.message = f"Scan complete. Found {job.progress.files_found} files."

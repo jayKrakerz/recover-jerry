@@ -1,6 +1,6 @@
 """Recovery-related models."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Optional
 from pydantic import BaseModel, Field
@@ -49,6 +49,6 @@ class RecoveryJob(BaseModel):
     status: RecoveryStatus = RecoveryStatus.PENDING
     progress: RecoveryProgress = Field(default_factory=RecoveryProgress)
     results: list[RecoveryFileResult] = Field(default_factory=list)
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(tz=timezone.utc))
     completed_at: Optional[datetime] = None
     error: Optional[str] = None

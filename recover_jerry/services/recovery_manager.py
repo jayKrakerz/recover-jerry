@@ -1,7 +1,7 @@
 """Recovery job lifecycle."""
 
 import asyncio
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, Callable
 
 from ..models.recovery import (
@@ -82,7 +82,7 @@ class RecoveryManager:
                 await self._notify_progress(job)
 
             job.status = RecoveryStatus.COMPLETED
-            job.completed_at = datetime.now()
+            job.completed_at = datetime.now(tz=timezone.utc)
             job.progress.percent = 100.0
             job.progress.message = (
                 f"Recovery complete. {job.progress.files_recovered} recovered, "

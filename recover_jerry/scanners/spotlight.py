@@ -238,6 +238,21 @@ class SpotlightScanner(BaseScanner):
             access_path="",
         )
 
+    @staticmethod
+    def _parse_mdls_date(val: str) -> Optional[datetime]:
+        """Parse date strings from mdls output, handling multiple formats."""
+        for fmt in ("%Y-%m-%d %H:%M:%S %z", "%Y-%m-%d %H:%M:%S %Z"):
+            try:
+                return datetime.strptime(val, fmt)
+            except ValueError:
+                continue
+        # Last resort: strip timezone and parse as UTC
+        try:
+            dt = datetime.strptime(val[:19], "%Y-%m-%dT%H:%M:%S")
+            return dt.replace(tzinfo=timezone.utc)
+        except ValueError:
+            return None
+
     async def _get_spotlight_metadata(self, path_str: str) -> dict:
         result = {}
         try:
@@ -264,15 +279,9 @@ class SpotlightScanner(BaseScanner):
                         except ValueError:
                             pass
                     elif "CreationDate" in key:
-                        try:
-                            result["created"] = datetime.strptime(val, "%Y-%m-%d %H:%M:%S %z")
-                        except ValueError:
-                            pass
+                        result["created"] = self._parse_mdls_date(val)
                     elif "ModificationDate" in key:
-                        try:
-                            result["modified"] = datetime.strptime(val, "%Y-%m-%d %H:%M:%S %z")
-                        except ValueError:
-                            pass
+                        result["modified"] = self._parse_mdls_date(val)
         except Exception:
             pass
         return result

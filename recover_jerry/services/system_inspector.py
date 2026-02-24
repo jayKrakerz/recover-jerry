@@ -1,12 +1,15 @@
 """Detect volumes, snapshots, Time Machine, and permissions."""
 
+import logging
 import shutil
 from pathlib import Path
 
-from ..models.system import SystemInfo, VolumeInfo
+from ..models.system import SystemInfo, SourceAvailability, VolumeInfo
 from ..utils.macos_commands import get_hostname, get_os_version, list_diskutil_volumes
 from ..utils.permissions import check_sudo_cached, check_full_disk_access
 from ..scanners.registry import get_all_scanners
+
+logger = logging.getLogger(__name__)
 
 
 async def inspect_system() -> SystemInfo:
@@ -31,8 +34,18 @@ async def inspect_system() -> SystemInfo:
     scanners = get_all_scanners()
     sources = []
     for scanner in scanners.values():
-        avail = await scanner.check_availability()
-        avail.has_sudo = sudo_cached
+        try:
+            avail = await scanner.check_availability()
+            avail.has_sudo = sudo_cached
+        except Exception as e:
+            logger.warning(f"Scanner {scanner.source_id} availability check failed: {e}")
+            avail = SourceAvailability(
+                source_id=scanner.source_id,
+                name=scanner.name,
+                available=False,
+                requires_sudo=scanner.requires_sudo,
+                detail=f"Availability check failed: {e}",
+            )
         sources.append(avail)
 
     return SystemInfo(

@@ -85,7 +85,12 @@ class RecoveryEngine:
             orig = Path(file.original_path)
             # Strip leading / to make it relative
             relative = Path(str(orig).lstrip("/"))
-            return self.destination / relative
+            # Resolve to prevent path traversal (../../ etc)
+            resolved = (self.destination / relative).resolve()
+            if not str(resolved).startswith(str(self.destination.resolve())):
+                # Fall back to flat filename if path escapes destination
+                return self.destination / file.filename
+            return resolved
         else:
             return self.destination / file.filename
 

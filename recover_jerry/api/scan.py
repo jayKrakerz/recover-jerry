@@ -49,7 +49,7 @@ async def load_photorec_results():
     config = ScanConfig(sources=["file_carving"])
     job = scan_manager.create_job(config)
     job.status = ScanStatus.COMPLETED
-    job.completed_at = datetime.now()
+    job.completed_at = datetime.now(tz=timezone.utc)
 
     files = []
     for d in sorted(output_path.iterdir()):

@@ -1,6 +1,6 @@
 """Scan-related models."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Optional
 from pydantic import BaseModel, Field
@@ -39,7 +39,7 @@ class ScanJob(BaseModel):
     config: ScanConfig
     status: ScanStatus = ScanStatus.PENDING
     progress: ScanProgress = Field(default_factory=ScanProgress)
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(tz=timezone.utc))
     completed_at: Optional[datetime] = None
     error: Optional[str] = None
 
